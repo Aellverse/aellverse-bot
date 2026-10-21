@@ -1,0 +1,82 @@
+import os
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+
+TOKEN = os.getenv('BOT_TOKEN')
+ADMIN = '@ellcocote'
+
+PRICELIST = '''💚 PRICELIST JPM AELLVERSE
+
+25 member — Rp3.500
+50 member — Rp7.000
+75 member — Rp9.500
+100 member — Rp12.000
+150 member — Rp16.000
+200 member — Rp22.000
+250 member — Rp26.000
+300 member — Rp32.000
+350 member — Rp36.000
+400 member — Rp42.000
+450 member — Rp46.000
+500 member — Rp52.000
+600 member — Rp62.000
+650 member — Rp68.000
+750 member — Rp77.000
+850 member — Rp86.000
+900 member — Rp92.000
+Full member — Rp115.000'''
+
+MENU = InlineKeyboardMarkup([
+    [InlineKeyboardButton('💰 Pricelist JPM', callback_data='price')],
+    [InlineKeyboardButton('📋 Info Layanan', callback_data='layanan')],
+    [InlineKeyboardButton('🛒 Order JPM', callback_data='order')],
+    [InlineKeyboardButton('👤 Kontak Admin', url='https://t.me/ellcocote')],
+])
+
+async def start(update, context):
+    await update.message.reply_text(
+        '💚 Selamat datang di AELLVERSE BOT!\n\nPilih menu di bawah ini.',
+        reply_markup=MENU
+    )
+
+async def menu(update, context):
+    await start(update, context)
+
+async def pricelist(update, context):
+    await update.message.reply_text(PRICELIST)
+
+async def buttons(update, context):
+    query = update.callback_query
+    await query.answer()
+    if query.data == 'price':
+        await query.message.reply_text(PRICELIST)
+    elif query.data == 'layanan':
+        await query.message.reply_text(
+            '📋 INFO LAYANAN AELLVERSE\n\n'
+            'Jasa push member grup (JPM).\n'
+            'Harga mengikuti jumlah member pada pricelist.\n'
+            'Konfirmasi detail layanan dan ketentuan kepada admin sebelum membayar.'
+        )
+    elif query.data == 'order':
+        await query.message.reply_text(
+            '🛒 ORDER JPM AELLVERSE\n\n'
+            'Silakan hubungi admin untuk memilih paket dan mengonfirmasi pesanan: '
+            'https://t.me/ellcocote'
+        )
+
+async def post_init(app):
+    await app.bot.set_my_commands([
+        BotCommand('start', 'Buka menu utama'),
+        BotCommand('menu', 'Tampilkan menu'),
+        BotCommand('pricelist', 'Lihat daftar harga'),
+    ])
+
+if __name__ == '__main__':
+    if not TOKEN:
+        raise RuntimeError('BOT_TOKEN belum diatur pada Environment Variables')
+    app = Application.builder().token(TOKEN).post_init(post_init).build()
+    app.add_handler(CommandHandler('start', start))
+    app.add_handler(CommandHandler('menu', menu))
+    app.add_handler(CommandHandler('pricelist', pricelist))
+    app.add_handler(CallbackQueryHandler(buttons))
+    app.run_polling()
